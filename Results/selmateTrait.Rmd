@@ -1,0 +1,223 @@
+```{r selection.ebv.individ,results='asis'}
+cat("\n\n### 2.7.1 个体水平上的选择指数分析\n\n")
+if(length(trait.abb)>=1) {
+  for (i in 1:length(trait.abb)) {
+    if (is.selection.index.ebv.individ[i]) {
+      cat(paste("\n\n#### 2.7.1.", i, " ",trait.chinese.label[i], "(", trait.abb[i], ")"))
+      #读取包括个体EBV和选择指数信息的文件
+      selindex.ebv.individ <-
+        read.csv(data.individ.trait.sel.index[i], header = TRUE)
+      #生成个体水平上的散点图
+      selindex.ebv.individ.group.by <- eval(parse(text=paste("group_by(selindex.ebv.individ,", tsi.trait.individ.nested.term[i], ",AnimalID)", sep = "")))
+      selindex.ebv.individ.group.by.summ <- eval(parse(text=paste("summarise(selindex.ebv.individ.group.by,SelIndex =  mean(SelIndex),EBV=mean(",trait.ebv.column.name[i],"))",sep="")))      
+      selindex.ebv.scatter.point.individ <-
+      ggplot(data=selindex.ebv.individ.group.by.summ,aes(x=SelIndex,y= EBV)) +
+        geom_point(shape=1) +
+        geom_smooth(method="gam") +
+        ParseFacetTerms(nested.terms = tsi.trait.individ.nested.term[i]) + 
+        labs(
+          x = "选择指数",
+          y = paste(
+            trait.chinese.label[i],
+            "(",
+            trait.abb[i],
+            ")育种值/",
+            trait.unit[i],
+            sep = ""
+          )
+        ) + default_theme
+      fig.counter <- fig.counter + 1
+      cat("\n\n")
+      cat(
+        paste(
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代个体选择指数与",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状育种值的散点图分布见图",
+          fig.counter,
+          "，二者之间的相关系数为",
+          eval(parse(
+            text = paste(
+              "sprintf(\"%.2f\",cor(selindex.ebv.individ$SelIndex, selindex.ebv.individ$",
+              trait.ebv.column.name[i],
+              ", use = \"complete.obs\"))",
+              sep = ""
+            )
+          )),
+          "±",
+          eval(parse(
+            text = paste(
+              "sprintf(\"%.4f\",CorTestPlus(cor.test(selindex.ebv.individ$SelIndex, selindex.ebv.individ$",
+              trait.ebv.column.name[i],
+              "))$standard.error)",
+              sep = ""
+            )
+          )),
+          "。\n\n",
+          sep = ""
+        )
+      )
+      print(selindex.ebv.scatter.point.individ)
+      cat("\n\n")
+      cat(
+        paste(
+          "###### 图",
+          fig.counter,
+          " ",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代个体选择指数与",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状育种值的散点图分布\n\n",
+          sep = ""
+        )
+      )
+    }
+  }
+}
+```
+
+```{r selection.ebv.family,warning = FALSE,results='asis'}
+cat("\n\n### 2.7.2 家系水平上的选择指数分析\n\n")
+if(length(trait.abb)>=1) {
+  for (i in 1:length(trait.abb)) {
+    if (is.selection.index.ebv.family[i]) {
+      cat(paste("\n\n#### 2.7.2.",i, " ", trait.chinese.label[i], "(", trait.abb[i], ")"))
+      #读取包括家系选择指数和EBV信息的文件
+      selindex.ebv.family <-
+        read.csv(data.family.trait.sel.index[i], header = TRUE)
+      selindex.ebv.family.group.by <- eval(parse(text=paste("group_by(selindex.ebv.family,", tsi.trait.family.nested.term[i], ",FamilyID)", sep = "")))
+      selindex.ebv.family.group.by.summ <- eval(parse(text=paste("summarise(selindex.ebv.family.group.by,SelIndex =  mean(SelIndex),EBV=mean(",trait.ebv.column.name[i],"))",sep="")))
+      selindex.ebv.scatter.point.family <- ggplot(data=selindex.ebv.family.group.by.summ,aes(x=SelIndex,y= EBV)) +
+      geom_point(shape=1)+geom_smooth(method="loess") + 
+      ParseFacetTerms(nested.terms = tsi.trait.family.nested.term[i]) + 
+      labs(
+          x = "选择指数",
+          y = paste(
+            trait.chinese.label[i],
+            "(",
+            trait.abb[i],
+            ")育种值/",
+            trait.unit[i],
+            sep = ""
+          )
+        ) + default_theme
+      fig.counter <- fig.counter + 1
+      cat("\n\n")
+      #生成家系水平上的散点图
+      cat(
+        paste(
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代家系选择指数与",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状育种值的散点图分布见图",
+          fig.counter,
+          "，二者之间的相关系数为",
+          eval(parse(
+            text = paste(
+              "sprintf(\"%.2f\",cor(selindex.ebv.family$SelIndex, selindex.ebv.family$",
+              trait.ebv.column.name[i],
+              ", use = \"complete.obs\"))",
+              sep = ""
+            )
+          )),
+          "±",
+          eval(parse(
+            text = paste(
+              "sprintf(\"%.4f\",CorTestPlus(cor.test(selindex.ebv.family$SelIndex, selindex.ebv.family$",
+              trait.ebv.column.name[i],
+              "))$standard.error)",
+              sep = ""
+            )
+          )),
+          "。\n\n",
+          sep = ""
+        )
+      )
+      print(selindex.ebv.scatter.point.family)
+      cat("\n\n")
+      cat(
+        paste(
+          "###### 图",
+          fig.counter,
+          " ",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代家系选择指数与",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状育种值的散点图\n\n",
+          sep = ""
+        )
+      )
+    }
+  }
+} else {
+  cat("\n\n未执行相关分析。\n\n")
+}
+
+```
+
+```{r selection.index.family,results="asis"}
+cat("\n\n### 2.7.3 育种群体家系育种目标性状的综合选择指数\n\n")
+if (is.selection.index) {
+  cat("\n\n")
+  fig.counter <- fig.counter + 1
+  cat(
+    paste(
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代各家系",
+      "选择指数见图",
+      fig.counter,
+      "。\n\n",
+      sep = ""
+    )
+  )
+  selindex.ebv.family <-
+    read.csv(data.family.trait[1], header = TRUE)
+  selindex.ebv.family.group.by <- eval(parse(text=paste("group_by(selindex.ebv.family,", tsi.trait.selection.index.nested.term, ",FamilyID)", sep = "")))
+  selindex.ebv.family.group.by.summ <- summarise(selindex.ebv.family.group.by,SelIndex =  mean(SelIndex))
+  selindex.bar.point.family <-
+    ggplot(selindex.ebv.family.group.by.summ, aes(x = reorder(FamilyID,-SelIndex), y =
+                                      SelIndex)) +
+    geom_segment(aes(xend = FamilyID), yend = 0, colour = "grey50") +
+    geom_point(aes(colour = FamilyID)) +
+    ParseFacetTerms(nested.terms = tsi.trait.selection.index.nested.term) + 
+    labs(x = "家系编号", y = "选择指数") +
+    theme.family.ebv.bar.point.axis.text.x.angel.90
+  print(selindex.bar.point.family)
+  cat("\n\n")
+  cat(
+    paste(
+      "###### 图",
+      fig.counter,
+      " ",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代各家系选择指数",
+      sep = ""
+    )
+  )
+} else {
+  cat("\n\n未执行相关分析。\n\n")
+}
+
+```
+### 2.7.4 留种和配种方案制定原则
+为了更好地控制近亲交配，最大限度地提高目标性状的遗传进展，利用遗传贡献理论，选择优秀的家系和个体制定配种方案。在新的方案下，参与配种的家系数量可能会多于或少于一半家系，因此不再预留一半家系。
+
+请根据选择指数制定方法、以及配种过程进行补充。

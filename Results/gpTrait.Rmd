@@ -1,0 +1,46 @@
+```{r Trait.models,results='asis'}
+if(length(trait.abb)>=1) {
+  for (i in 1:length(trait.abb)) {
+    if (is.genetic.model[i]) {
+      cat(paste("\n\n### 2.4.",i," ",trait.chinese.label[i], "(", trait.abb[i], ")性状", "\n", sep = ""))
+      cat("\n\n",
+          trait.chinese.label[i],
+          "(",
+          trait.abb[i],
+          ")性状的育种分析模型为：",
+          "\n\n")
+      cat(trait.models[i])
+      cat(trait.models.description[i])
+      cat("\n\n",
+          trait.chinese.label[i],
+          "(",
+          trait.abb[i],
+          ")性状的遗传力计算公式：",
+          "\n\n")
+      cat(trait.models.h2.equation[i])
+      cat(trait.models.h2.description[i])
+      table.counter <-  table.counter + 1
+      cat("\n\n")
+      cat(
+        paste("###### 表",table.counter," ",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状遗传参数\n\n",
+          sep = ""
+        )
+      )
+      cat("\n\n")
+      cat(trait.models.h2.table[i])
+      
+    }
+  }
+}
+```
+
+
+
+

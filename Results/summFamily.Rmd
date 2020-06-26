@@ -1,0 +1,553 @@
+```{r read.families}
+#读取家系信息, 把日期数据转换为日期类型
+families$FamilyClass <-  as.factor(families$FamilyClass)
+if (is.family.structure){
+  families$Birthday <- as.Date(families$Birthday)
+}
+if (is.family.standardization){
+  for (i in 1:standardization.num){
+    eval(parse(text = paste("families$S",i,"Date = as.Date(families$S",i,"Date)",sep="")))
+  }
+}
+```
+
+```{r summaryNucleusPopulation, results="asis"}
+cat(paste("\n\n","### 2.1.1 家系结构","\n\n",sep=""))
+if (is.family.structure && standardization.num > 1) {
+  families.summary <- AnalyzeFamilyStructure(families)
+  family.Class.Number <- length(levels(families$FamilyClass))
+  if (family.Class.Number > 1) {
+    j <- 1
+    family.class.summary <- vector("list", family.Class.Number+1)
+    for (i in levels(families$FamilyClass)) {
+      t <- subset(families, FamilyClass %in% i)
+      family.class.summary[[j]] <- AnalyzeFamilyStructure(t)
+      j <- j + 1
+    }
+    family.class.summary[[j]] <- families.summary
+  }
+  table.counter <- table.counter + 1
+  cat(
+    paste(
+      "\n\n",
+      "利用人工定向交尾技术，通过巢式交配设计",
+      generation.name,
+      "代成功建立全同胞家系",
+      families.summary$TotalFullSibFamilyNum,
+      "个，其中父系半同胞家系组",
+      families.summary$PaternalHalfSibGroupNum,
+      "个（",
+      families.summary$PaternalHalfSibFamilyNum,
+      "个半同胞家系）；母系半同胞组家系组",
+      families.summary$MaternalHalfSibGroupNum,
+      "个（",
+      families.summary$MaternalHalfSibFamilyNum,
+      "个半同胞家系）；父母系半同胞家系的数量合计为",
+      families.summary$TotalHalfSibFamilyNum,
+      "个，占全部家系数量的",
+      families.summary$HalfsibRatio,
+      "%。各群体家系分布情况见表",
+      table.counter,
+      "。\n\n",
+      sep = ""
+    )
+  )
+  if (family.Class.Number > 1) {
+    family.summary.class <-
+      data.frame(do.call("cbind", family.class.summary))
+    family.summary.class.column.name <- c(levels(families$FamilyClass),"全部")
+    colnames(family.summary.class) <- family.summary.class.column.name
+    family.summary.all <- cbind(
+      FamilyClass = c(
+        "父本数",
+        "母本数",
+        "全同胞家系数",
+        "父系半同胞组数",
+        "父系半同胞家系数",
+        "母系半同胞组数",
+        "母系半同胞家系数",
+        "半同胞家系数",
+        "半同胞家系比率（%）"
+      ),
+      family.summary.class
+    )
+  } else {
+    family.summary.class <- c(unlist(families.summary))
+    family.summary.class.column.name <- levels(families$FamilyClass)
+    family.summary.all <- cbind(
+      FamilyClass = c(
+        "父本数",
+        "母本数",
+        "全同胞家系数",
+        "父系半同胞组数",
+        "父系半同胞家系数",
+        "母系半同胞组数",
+        "母系半同胞家系数",
+        "半同胞家系数",
+        "半同胞家系比率（%）"
+      ),
+      family.summary.class
+    )
+    
+  }
+  
+  kable(
+    family.summary.all,
+    booktabs = TRUE,
+    row.names = FALSE,
+    col.names = c("家系类型",
+                  family.summary.class.column.name),
+    caption = paste(
+      "表",
+      table.counter,
+      " ",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,"世代",
+      "家系结构",
+      sep = ""
+    )
+  )
+} else {
+  cat(paste("\n\n", "未执行家系结构分析。", "\n\n", sep = ""))
+}
+  
+```
+  
+```{r FamilyBirthday,results="asis"}
+cat(paste("\n\n","### 2.1.2 家系构建和标准化同步性","\n\n",sep=""))
+tile.2.1.2.counter <- 0
+if (is.family.standardization) {
+  tile.2.1.2.counter <- tile.2.1.2.counter + 1
+  cat(paste("\n\n#### 2.1.2.",tile.2.1.2.counter," 家系构建同步性","\n\n",sep=""))
+  FamilyperDate <- unique(families[, c("FamilyID", "Birthday")])
+  FamilyNumperDate <- data.frame(table(FamilyperDate$Birthday))
+  colnames(FamilyNumperDate) <- c("Birthday", "FamilyNum")
+  FirstDate <- min(as.Date(FamilyperDate$Birthday))
+  LastDate <- max(as.Date(FamilyperDate$Birthday))
+  Days <- as.integer(LastDate - FirstDate) + 1
+  FamilyNumperDay <-
+    round(families.summary$TotalFullSibFamilyNum / Days, 2)
+  MaxFamilyNumperDay <-  max(FamilyNumperDate$FamilyNum)
+  #生成第1个图，家系生产同步性图
+  fig.counter <- fig.counter + 1
+  cat(
+    paste(
+      "\n\n",
+      "育种群体家系生产同步性情况见图",
+      fig.counter,
+      "。家系的生产周期从",
+      FirstDate,
+      "至",
+      LastDate,
+      "，共计",
+      Days,
+      "天。平均每天生产",
+      FamilyNumperDay,
+      "个家系，每天最多建立家系",
+      MaxFamilyNumperDay,
+      "个。\n\n",
+      sep = ""
+    )
+  )
+  families.syn <- unique(families[,c(unlist(strsplit(family.birthday.barplot.nested.term,split = ",")),"FamilyID","Birthday")])
+  family.birth.group <-  eval(parse(text=paste("group_by(families.syn,",family.birthday.barplot.nested.term, ",Birthday)",sep = "")))
+  family.birth.group.count <- summarise(family.birth.group,FamilyNum=length(FamilyID))
+  family.birth.bar <-
+    ggplot(data = family.birth.group.count, aes(Birthday, FamilyNum)) + geom_bar(stat = "identity") +scale_x_date(date_breaks = "2 days",labels=date_format("%m/%d"))+
+    labs(x = "家系孵化日期", y = "家系数量/个") + ParseFacetTerms(nested.terms = family.birthday.barplot.nested.term) + family_birthday_bar_theme
+  print(family.birth.bar)
+  cat("\n\n")
+  cat(
+    paste(
+      "###### 图",
+      fig.counter,
+      " ",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代家系生产同步性",
+      "\n\n",
+      sep = ""
+    )
+  )
+  if (standardization.num > 2){
+  st.days <- array(0,c(nrow(families),standardization.num))
+  } else {
+    st.days <- array(0,c(nrow(families),standardization.num-1))
+  }
+  
+  k <-  1
+  if(standardization.num > 2){
+  for (i in 2:standardization.num){
+       st.days[,k] <- eval(parse(text=paste("families$S",i,"Date"," - families$S",i-1,"Date + 1",sep="")))
+       k <- k + 1
+  }
+  st.days[,k] <- eval(parse(text=paste("families$S",k,"Date-families$S1Date",sep="")))
+  }
+  
+  if (standardization.num == 2){
+  #从第一次标准化到打标记的间隔时间
+  k = 1
+  st.days[,k] <- families$M1Date-families$S1Date
+  }
+  
+  k <- ncol(st.days)
+  st.days.stat <- array(0,c(3,k))
+  for (i in 1:k) {
+    st.days.stat[,i] <- c(round(mean(st.days[,i]),2),fivenum(st.days[,i])[c(1,5)])
+  }
+
+  table.counter <- table.counter + 1
+  
+  standardization.description <- character(k)
+  if (k > 1) {
+  for (i in 1:(k-1)) {
+    standardization.description[i] <- paste("从",standardization.label[i],
+                                            "阶段到",
+                                            standardization.label[i+1],
+                                            "阶段平均天数为",
+                                            st.days.stat[,i][1],
+                                            "d",
+                                            sep="")
+  }
+  standardization.description[k] <- paste("从",standardization.label[1],
+                                            "阶段到",
+                                            standardization.label[k],
+                                            "阶段平均天数为",
+                                            st.days.stat[,k][1],
+                                             "d",
+                                            sep="")
+  } else {
+        standardization.description[1] <- paste("从",standardization.label[1],
+                                            "阶段到",
+                                            standardization.label[2],
+                                            "阶段平均天数为",
+                                            st.days.stat[,i][1],
+                                            "d",
+                                            sep="")
+  }
+  if (k > 1) {
+  standardization.paste.label <- character(k)
+  for (i in 1:(k-1)) {
+    standardization.paste.label[i] <- paste(standardization.label[i],
+                                            "阶段到",
+                                            standardization.label[i+1],
+                                            "阶段天数",
+                                            sep="")
+  }
+  standardization.paste.label[k] <- paste(standardization.label[1],
+                                            "阶段到",
+                                            standardization.label[k],
+                                            "阶段天数",
+                                            sep="")
+  } else{
+      standardization.paste.label[1] <- paste(standardization.label[1],
+                                            "阶段到",
+                                            standardization.label[2],
+                                            "阶段天数",
+                                            sep="")
+  }
+  tile.2.1.2.counter <- tile.2.1.2.counter + 1
+  cat(paste("\n\n#### 2.1.2.",tile.2.1.2.counter," 家系不同标准化阶段同步性\n\n",sep=""))
+  cat(paste("家系不同标准化阶段的同步性见表",table.counter,"。",sep=""))
+  cat(paste(standardization.description,collapse="，"),"。",sep="")
+  cat("\n\n")
+  DevDays.dfr <- data.frame(t(st.days.stat))
+  DevDays.dfr <-
+    cbind(RowLabels = standardization.paste.label,
+          DevDays.dfr)
+  print(kable(
+    DevDays.dfr,
+    row.names = FALSE,
+    col.names = c("不同阶段","平均值/d","最小值/d", "最大值/d"),
+    caption = paste(
+      "表",
+      table.counter,
+      " ",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代家系不同标准化阶段天数",
+      sep = ""
+    ),
+    align = "c"
+  ))
+  cat("\n\n")
+} else {
+  cat(paste("\n\n", "未执行相关分析。", sep = ""))
+}
+
+```
+
+
+```{r standardization.survial,results="asis"}
+tile.2.1.2.counter <- tile.2.1.2.counter + 1
+cat(paste("\n\n#### 2.1.2.",tile.2.1.2.counter," 家系不同标准化阶段存活率\n\n",sep=""))
+if (is.family.standardization.survival) {
+  k <- 1
+  family.standardization.sur <-
+    array(0, c(
+      nrow(families),
+      sum(standardization.survial.analysis, na.rm = TRUE)
+    ))
+  family.standardization.sur.stats.description <-
+    character(sum(standardization.survial.analysis, na.rm = TRUE))
+  column.name <-
+    character(sum(standardization.survial.analysis, na.rm = TRUE))
+  for (i in 1:standardization.num) {
+    if (standardization.survial.analysis[i]) {
+      column.name[k] <- paste("S", i, "SurRate", sep = "")
+      family.standardization.sur[, k] <-
+        eval(parse(
+          text = paste(
+            "round(families$S",
+            i,
+            "SurNum * 100/ families$S",
+            i,
+            "StockNum,2)",
+            sep = ""
+          )
+        ))
+      family.standardization.sur.stats.description[k] <-
+        paste(
+          standardization.survial.analysis.label[i],
+          "的",
+          DescStatChinese(
+            family.standardization.sur[, k],
+            scale.unit = "%",
+            digit.num = 2
+          ),
+          sep = ""
+        )
+      k <- k + 1
+    }
+  }
+  colnames(family.standardization.sur) <- column.name
+  families <- cbind(families, family.standardization.sur)
+  families.melt <- melt(
+    families,
+    id.vars = c("FamilyID", standardization.survial.boxplot.nested.term),
+    measure.vars = column.name
+  )
+  colnames(families.melt) <-
+    c("FamilyID",
+      standardization.survial.boxplot.nested.term,
+      "Standard",
+      "SurRate")
+  families.melt$Standard <- as.factor(families.melt$Standard)
+  levels(families.melt$Standard) <-
+    standardization.survial.analysis.label[standardization.survial.analysis]
+  
+  standardization.survival.rate.boxplot.family <-
+    eval(parse(
+      text = paste(
+        "ggplot(data = families.melt,aes(y=SurRate",
+        ",x=Standard))+geom_boxplot()",
+        sep = ""
+      )
+    )) + labs(x = "标准化阶段",
+              y = "存活率/%") +
+    geom_dotplot(
+      binaxis = "y",
+      stackdir = "center",
+      binwidth =
+        eval(
+          parse(text = "(max(families.melt$SurRate)-min(families.melt$SurRate)) / 30")
+        ),
+      position = "dodge"
+    ) +
+    ParseFacetTerms(nested.terms = standardization.survial.boxplot.nested.term) + 
+    default_theme
+  fig.counter <- fig.counter + 1
+  cat(
+    paste(
+      "\n\n",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代",
+      "家系不同标准化阶段存活率见图",
+      fig.counter,
+      "。其中，",
+      paste(family.standardization.sur.stats.description, collapse = "；"),
+      "。\n\n",
+      sep = ""
+    )
+  )
+  cat("\n\n")
+  print(standardization.survival.rate.boxplot.family)
+  cat("\n\n")
+  cat(
+    paste(
+      "###### 图",
+      fig.counter,
+      " ",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代",
+      "家系不同标准化阶段存活率箱形图",
+      "\n\n",
+      sep = ""
+    )
+  )
+  
+} else {
+  cat("\n\n未执行相关分析\n\n")
+}
+
+```
+
+
+```{r taggingBW.analysis,results="asis"}
+if (is.tagging.trait.analysis) {
+if (standardization.num > 1) {
+  family.taggingtrait.age <-
+    eval(parse(
+      text = paste(
+        "data.frame(TaggingTrait=families$",
+        tagging.trait.column.name,
+        ", Age=st.days[,",
+        ncol(st.days),
+        "])",
+        sep = ""
+      )
+    ))
+  temp.column.names <-  colnames(family.taggingtrait.age)
+  family.taggingtrait.age <- cbind(family.taggingtrait.age,families[,c("FamilyID",tagging.trait.age.scatter.nested.term)])
+  colnames(family.taggingtrait.age) <- c(temp.column.names,"FamilyID",tagging.trait.age.scatter.nested.term)
+  family.taggingtrait.age.prune <- unique(family.taggingtrait.age)
+  family.tagging.trait.age.scatter.point <-
+        ggplot(data=family.taggingtrait.age.prune,aes(x=Age,y=TaggingTrait)) + 
+        geom_point(shape=1)+geom_smooth(method="loess") + 
+        ParseFacetTerms(nested.terms = tagging.trait.age.scatter.nested.term) + 
+        labs(x = "日龄",
+              y = paste(tagging.trait.label,
+                        "/",
+                        tagging.trait.unit,
+                        sep = "")) + default_theme
+  tile.2.1.2.counter <-  tile.2.1.2.counter + 1                        
+  cat(paste("\n\n#### 2.1.2.",tile.2.1.2.counter," 家系",tagging.trait.label,"与标记日龄的相关性",sep=""))
+  fig.counter <- fig.counter + 1
+  cat(
+    paste(
+      "\n\n",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代家系",
+      tagging.trait.label,
+      "与标记日龄的散点图见图",
+      fig.counter,
+      "，二者之间的相关系数为",
+      eval(
+        parse(text = "round(cor(family.taggingtrait.age.prune$Age,family.taggingtrait.age.prune$TaggingTrait),2)")
+      ),
+      "±",
+      eval(
+        parse(text = "round(CorTestPlus(cor.test(family.taggingtrait.age.prune$Age,family.taggingtrait.age.prune$TaggingTrait))$standard.error,4)")
+      ),
+      "。\n\n",
+      sep = ""
+    )
+  )
+  
+  print(family.tagging.trait.age.scatter.point)
+  cat(
+    paste(
+      "\n\n###### 图",fig.counter," ",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代家系",
+      tagging.trait.label,
+      "与标记日龄的散点图\n\n",
+      sep = ""
+    )
+  )
+}  
+  families.prune <- unique(families[,c(tagging.trait.column.name,"Generation","FamilyID")])
+  tile.2.1.2.counter <- tile.2.1.2.counter + 1
+  cat(paste("\n\n#### 2.1.2.",tile.2.1.2.counter," 家系",tagging.trait.label,"分布\n\n",sep=""))  
+  taggingBW.boxplot.family <-
+    eval(parse(
+      text = paste(
+        "ggplot(data=families.prune,aes(y=",
+        tagging.trait.column.name,
+        ",x=Generation))+geom_boxplot()",
+        sep = ""
+      )
+    )) + labs(
+      x = "世代",
+      y = paste(tagging.trait.label, "/", tagging.trait.unit, sep =
+                  "")
+    ) +
+    geom_dotplot(
+      binaxis = "y",
+      stackdir = "center",
+      binwidth =
+        eval(parse(
+          text = paste(
+            "(max(families.prune$",
+            tagging.trait.column.name,
+            ") - min(families.prune$",
+            tagging.trait.column.name,
+            ")) / 30",
+            sep = ""
+          )
+        )),
+      position = "dodge"
+    ) + default_theme
+  fig.counter <- fig.counter + 1
+  cat(
+    paste(
+      "\n\n",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代",
+      "家系",
+      tagging.trait.label,
+      "见图",
+      fig.counter,
+      "。其中，",
+      DescStatChinese(eval(parse(
+        text = paste("families.prune$",
+                     tagging.trait.column.name, sep = "")
+      )),
+      scale.unit = tagging.trait.unit, digit.num = 2),
+      "。\n\n",
+      sep = ""
+    )
+  )
+  suppressWarnings(print(taggingBW.boxplot.family))
+  cat("\n\n")
+  cat(
+    paste(
+      "###### 图",
+      fig.counter,
+      " ",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代",
+      "家系",
+      tagging.trait.label,
+      "箱形图",
+      "\n\n",
+      sep = ""
+    )
+  )
+} 
+```
+

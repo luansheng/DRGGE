@@ -1,0 +1,27 @@
+rm(list=ls())
+#选择一个包下载镜像站点，35可能是清华大学cran镜像站点
+chooseCRANmirror(graphics=FALSE, local.only=TRUE, ind=35)
+required_packages <- c("knitr","ggplot2","scales","data.table","dplyr","pander","optiSel","sysfonts","showtext")
+
+for (i in 1:length(required_packages)) {
+  is_installed <- require(required_packages[i],character.only = TRUE)
+  if (!is_installed) {
+    install.packages(pkgs=required_packages[i])
+    require(required_packages[i],character.only = TRUE)
+  }
+}
+
+
+#pdf.options(family = "GB1") #定义中文编码，图形中显示中文
+options(warn = -1)
+#使用windows字体
+# windowsFonts(NSS=windowsFont("NSimSun"),
+#              RMN=windowsFont("Times New Roman"),
+#              SIM=windowsFont("SimHei"))
+
+# 使用windows中自带的字体
+font_add(family = "heiti",regular = "simhei.ttf")
+font_add(family = "kaiti",regular = "simkai.ttf")
+
+#使用showtext包
+showtext_auto()

@@ -1,0 +1,427 @@
+```{r Trait.DescribStat.Individ,results='asis'}
+cat("\n\n### 2.3.1 个体水平上的描述性统计参数\\n")
+if (length(trait.abb) >= 1) {
+  for (i in 1:length(trait.abb)) {
+    if (is.individ.stats[i]) {
+      cat("\n\n")
+      cat(paste(
+        "#### 2.3.1.",i,
+        " ",
+        trait.chinese.label[i],
+        "(",
+        trait.abb[i],
+        ")性状\n",
+        sep =
+          ""
+      ))
+      #生成表格
+      table.counter <- table.counter + 1
+      trait.phenotype.individ.summ <- 
+        SummarizeTableTrait(
+          trait.data = read.csv(file = data.individ.trait[i], header = TRUE),
+          terms = tsd.table.trait.individ.nested.term[i],
+          terms.names = tsd.table.trait.individ.nested.term.label[i],
+          trait.column.name = trait.column.name[i],
+          trait.unit = trait.unit[i],
+          count.unit = individ.unit,
+          digit.num = digit.num,
+          title = paste(
+            "表",
+            table.counter,
+            " ",
+            species.chinese.name,
+            species.latin.name,
+            "育种群体",
+            generation.name,
+            "世代个体",
+            paste(trait.chinese.label[i], "(", trait.abb[i], ")",sep=""),
+            "性状观测值描述性统计参数",
+            "\n\n",
+            sep = ""
+          )
+        )
+      #只描述总体情况
+      last.record <- tail(trait.phenotype.individ.summ$summ, 1)
+      cat(
+        paste(
+          "\n\n",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代个体",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")",sep = ""),
+          "性状观测值的描述性统计参数见表",
+          table.counter,
+          "。其中，",
+          "测试个体总数为",
+          sprintf(paste("%.",0,"f",sep=""),last.record$T.count),
+          " ",
+          individ.unit,
+          "，",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")",sep=""),
+          "平均值为",
+          sprintf(paste("%.",digit.num,"f",sep=""),last.record$T.mean),
+          " ",
+          trait.unit[i],
+          "，",
+          "最小值为",
+          sprintf(paste("%.",digit.num,"f",sep=""),last.record$T.min),
+          " ",
+          trait.unit[i],
+          "，",
+          "最大值为",
+          sprintf(paste("%.",digit.num,"f",sep=""),last.record$T.max),
+          " ",
+          trait.unit[i],
+          "，",
+          "标准差为",
+          sprintf(paste("%.",digit.num,"f",sep=""),last.record$T.sd),
+          " ",
+          trait.unit[i],
+          "，",
+          "变异系数为",
+          sprintf(paste("%.",digit.num,"f",sep=""),last.record$T.cv),          
+          " %。",
+          "\n\n",
+          sep = ""
+        )
+      )
+      print(trait.phenotype.individ.summ$table)
+      cat("\n\n")
+      #生成箱形图
+      fig.counter <- fig.counter + 1
+      cat(
+        paste(
+          "\n\n",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代个体",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")",sep=""),
+          "性状的箱形图分布见图",
+          fig.counter,
+          "。\n\n",
+          sep = ""
+        )
+      )
+      xCombine <-
+        paste(
+          "interaction(",
+          paste(
+            "trait.phenotype.individ.summ$data",
+            unlist(strsplit(
+              tsd.boxplot.trait.individ.nested.term[i], ","
+            )),
+            sep = "$",
+            collapse = ","
+          ),
+          ")",
+          sep = ""
+        )
+      Boxplot.Individ <-
+        eval(parse(
+          text = paste(
+            "ggplot(data=trait.phenotype.individ.summ$data,aes(x=",
+            xCombine,
+            ",y=",
+            trait.column.name[i],
+            ",colour=",
+            xCombine,
+            "))+geom_boxplot(outlier.shape = 1)",
+            sep = ""
+          )
+        )) + labs(
+          x = tsd.boxplot.trait.individ.nested.term.label[i],
+          y = paste(
+            trait.chinese.label[i],
+            "(",
+            trait.abb[i],
+            ")/",
+            trait.unit[i],
+            sep = ""
+          )
+        ) +
+        theme.3
+      cat("\n\n")
+      print(Boxplot.Individ)
+      cat("\n\n")
+      cat(
+        paste(
+          "###### 图",
+          fig.counter,
+          " ",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代个体",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")",sep=""),
+          "性状的箱形图",
+          "\n\n",
+          sep = ""
+        )
+      )
+    }
+  }
+} else {
+  cat("\n\n未执行相关分析。\n\n")
+}
+
+```
+
+```{r Trait.DescribStat.Family, results = "asis"}
+cat("\n\n### 2.3.2 家系水平上的描述性统计参数\\n")
+if (length(trait.abb) >= 1) {
+  cat("\n")
+  for (i in 1:length(trait.abb)) {
+    if (is.family.stats[i]) {
+      cat("\n\n")
+      cat(paste(
+        "#### 2.3.2.",i,
+        " ",
+        trait.chinese.label[i],
+        "(",
+        trait.abb[i],
+        ")性状\n",
+        sep = ""
+      ))
+      table.counter <- table.counter + 1
+      Trait.Family.summ <-
+        SummarizeTableTrait(
+          trait.data = read.csv(file = data.family.trait[i], header = TRUE),
+          terms = tsd.table.trait.family.nested.term[i],
+          terms.names = tsd.table.trait.family.nested.term.label[i],
+          trait.column.name =  trait.column.name[i],
+          trait.unit = trait.unit[i],
+          count.unit = family.unit,
+          digit.num = digit.num,
+          title = paste(
+            "表",
+            table.counter,
+            " ",
+            species.chinese.name,
+            species.latin.name,
+            "育种群体",
+            generation.name,
+            "世代家系",
+            paste(trait.chinese.label[i], "(", trait.abb[i], ")",sep=""),
+            "性状描述统计参数",
+            sep = ""
+          )
+        )
+      #只描述总体情况
+      last.record <- tail(Trait.Family.summ$summ, 1)
+      cat("\n\n")
+      cat(
+        paste(
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代家系",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")",sep=""),
+          "性状的描述性统计参数见表",
+          table.counter,
+          "。其中，",
+          "基于家系的测试组数量为",
+          sprintf(paste("%.",0,"f",sep=""),last.record$T.count),          
+          " ",
+          family.unit,
+          "，",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")",sep=""),          
+          "平均值为",
+          sprintf(paste("%.",digit.num,"f",sep=""),last.record$T.mean),                    
+          " ",
+          trait.unit[i],
+          "，",
+          "最小值为",
+          sprintf(paste("%.",digit.num,"f",sep=""),last.record$T.min),                    
+          " ",
+          trait.unit[i],
+          "，",
+          "最大值为",
+          sprintf(paste("%.",digit.num,"f",sep=""),last.record$T.max),                    
+          " ",
+          trait.unit[i],
+          "，",
+          "标准差为",
+          sprintf(paste("%.",digit.num,"f",sep=""),last.record$T.sd),                    
+          " ",
+          trait.unit[i],
+          "，",
+          "变异系数为",
+          sprintf(paste("%.",digit.num,"f",sep=""),last.record$T.cv),                    
+          " %。",
+          "\n\n",
+          sep = ""
+        )
+      )
+      cat("\n\n")
+      print(Trait.Family.summ$table)
+      cat("\n\n")
+      fig.counter <- fig.counter + 1
+      cat(
+        paste(
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代家系",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")",sep=""),
+          "性状的箱形图分布见图",
+          fig.counter,
+          "。\n\n",
+          sep = ""
+        )
+      )
+      xCombine <-
+        paste(
+          "interaction(",
+          paste(
+            "Trait.Family.summ$data",
+            unlist(strsplit(
+              tsd.boxplot.trait.family.nested.term[i], ","
+            )),
+            sep = "$",
+            collapse = ","
+          ),
+          ")",
+          sep = ""
+        )
+      Boxplot.Family <-
+        eval(parse(
+          text = paste(
+            "ggplot(data=Trait.Family.summ$data,aes(x=",
+            xCombine,
+            ",y=",
+            trait.column.name[i],
+            ",colour=",
+            xCombine,
+            "))+geom_boxplot()",
+            sep = ""
+          )
+        )) + geom_jitter(shape = 21) + labs(
+          x = tsd.boxplot.trait.family.nested.term.label[i],
+          y = paste(
+            trait.chinese.label[i],
+            "(",
+            trait.abb[i],
+            ")/",
+            trait.unit[i],
+            sep = ""
+          )
+        ) +
+        family_phenotype_boxplot_theme
+      cat("\n\n")
+      print(Boxplot.Family)
+      cat("\n\n")
+      cat(
+        paste(
+          "###### 图",
+          fig.counter,
+          " ",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代家系",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")",sep=""),
+          "性状的箱形图\n\n",
+          sep = ""
+        )
+      )
+      
+      if (is.covariate.analysis[i]) {
+        trait.data = read.csv(file = data.family.trait[i], header = TRUE)
+        trait.data.groups <-
+          eval(parse(text = paste("group_by(trait.data,",tsd.covariate.trait.family.nested.term[i],",FamilyID)",sep="")))
+        trait.data.groups.summ <-
+          eval(parse(
+            text = paste(
+              "summarise(trait.data.groups,Covariate=mean(",
+              covariate.col.name[i],
+              "),MainTrait=mean(",
+              trait.column.name[i],
+              "))",
+              sep = ""
+            )
+          ))
+        family.trait.covariate.scatter.point <-
+          ggplot(data = trait.data.groups.summ, aes(x = Covariate, y = MainTrait)) +
+          geom_point(shape = 1) +
+          geom_smooth(method = "loess") +
+          ParseFacetTerms(nested.terms = tsd.covariate.trait.family.nested.term[i],scales.value="free") +
+          labs(
+            x = covariate.label[i],
+            y = paste(
+              trait.chinese.label[i],
+              "(",
+              trait.abb[i],
+              ")",
+              "/",
+              trait.unit[i],
+              sep = ""
+            )
+          ) +
+          default_theme
+        fig.counter <- fig.counter + 1
+        cat(
+          paste(
+            "\n\n",
+            species.chinese.name,
+            species.latin.name,
+            "育种群体",
+            generation.name,
+            "世代家系",
+            trait.chinese.label[i],
+            "与",
+            covariate.label[i],
+            "的散点图见图",
+            fig.counter,
+            "，二者之间的相关系数为",
+            sprintf("%.2f",
+              cor(
+                trait.data.groups.summ$Covariate,
+                trait.data.groups.summ$MainTrait,
+                use = "complete.obs"
+              )),
+            "±",
+            sprintf("%.4f",CorTestPlus(
+              cor.test(
+                trait.data.groups.summ$Covariate,
+                trait.data.groups.summ$MainTrait
+              )
+            )$standard.error),
+            "。\n\n",
+            sep = ""
+          )
+        )
+        
+        print(family.trait.covariate.scatter.point)
+        cat(
+          paste(
+            "\n\n###### 图",
+            fig.counter,
+            " ",
+            species.chinese.name,
+            species.latin.name,
+            "育种群体",
+            generation.name,
+            "世代家系",
+            trait.chinese.label[i],
+            "与",
+            covariate.label[i],
+            "的散点图\n\n",
+            sep = ""
+          )
+        )
+      }
+    }
+    
+  }
+} else {
+  cat("\n\n未执行相关分析。\n\n")
+}
+```

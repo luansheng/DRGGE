@@ -1,0 +1,454 @@
+```{r trait.ebv.individ,results='asis'}
+cat("\n\n### 2.5.1 个体水平上的育种值预测分析\n\n")
+if(length(trait.abb)>=1) {
+  for (i in 1:length(trait.abb)) {
+    if (is.ebv.individ[i]) {
+  		cat(paste("\n#### 2.5.1.",i," ",trait.chinese.label[i], "(", trait.abb[i], ")"))
+      cat("\n\n")
+      #生成个体水平上的散点图
+      #读取包括个体EBV信息的文件
+      ebv.individ <- read.csv(data.individ.trait[i],header=TRUE)
+      table.counter <- table.counter + 1
+      trait.ebv.individ.summ <-
+        SummarizeTableTrait(
+          trait.data = ebv.individ,
+          terms = tep.table.trait.individ.nested.term[i],
+          terms.names = tep.table.trait.individ.nested.term.label[i],
+          trait.column.name = trait.ebv.column.name[i],
+          trait.unit = trait.unit[i],
+          count.unit = individ.unit,
+          digit.num = digit.num,
+          title = paste(
+            "表",
+            table.counter,
+            " ",
+            species.chinese.name,
+            species.latin.name,
+            "育种群体",
+            generation.name,
+            "世代个体",
+            paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+            "性状育种值描述性统计参数",
+            "\n\n",
+            sep = ""
+          )
+        )
+      #只描述总体情况
+      last.record <- tail(trait.ebv.individ.summ$summ, 1)
+      cat(
+        paste(
+          "\n\n",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代个体",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状育种值的描述性统计参数见表",
+          table.counter,
+          "。其中，",
+          "总计测试个体数量为",
+          round(last.record$T.count, digit.num),
+          " ",
+          individ.unit,
+          "，",
+          "平均值为",
+          round(last.record$T.mean, digit.num),
+          " ",
+          trait.unit[i],
+          "，",
+          "最小值为",
+          round(last.record$T.min, digit.num),
+          " ",
+          trait.unit[i],
+          "，",
+          "最大值为",
+          round(last.record$T.max, digit.num),
+          " ",
+          trait.unit[i],
+          "，",
+          "标准差为",
+          round(last.record$T.sd, digit.num),
+          " ",
+          trait.unit[i],
+          "，",
+          "变异系数为",
+          round(last.record$T.cv, digit.num),
+          " %。",
+          "\n\n",
+          sep = ""
+        )
+      )
+      print(trait.ebv.individ.summ$table)
+
+      cat("\n\n")
+      #生成箱形图
+      fig.counter <- fig.counter + 1
+      cat(
+        paste(
+          "\n\n",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代个体",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状育种值箱形图分布见图",
+          fig.counter,
+          "。\n\n",
+          sep = ""
+        )
+      )
+      xCombine <-
+        paste(
+          "interaction(",
+          paste(
+            "trait.ebv.individ.summ$data",
+            unlist(strsplit(
+              tep.boxplot.trait.individ.nested.term[i], ","
+            )),
+            sep = "$",
+            collapse = ","
+          ),
+          ")",
+          sep = ""
+        )
+      ebv.boxplot.individ <-
+        eval(parse(
+          text = paste(
+            "ggplot(data=trait.ebv.individ.summ$data,aes(x=",
+            xCombine,
+            ",y=",
+            trait.ebv.column.name[i],
+            ",colour=",
+            xCombine,
+            "))+geom_boxplot(outlier.shape = 21)",
+            sep = ""
+          )
+        )) + labs(
+          x = tep.boxplot.trait.individ.nested.term.label[i],
+          y = paste(
+            trait.chinese.label[i],
+            "(",
+            trait.abb[i],
+            ")育种值/",
+            trait.unit[i],
+            sep = ""
+          )
+        ) +
+        theme.3
+      cat("\n\n")
+      print(ebv.boxplot.individ)
+      cat("\n\n")
+      cat(
+        paste(
+          "###### 图",
+          fig.counter,
+          " ",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代个体",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状育种值的箱形图",
+          "\n\n",
+          sep = ""
+        )
+      )      
+      
+      ebv.scatter.point.individ <-
+        eval(parse(
+          text = paste(
+            "ggplot(data=ebv.individ,aes(x=",
+            trait.ebv.column.name[i],
+            ",y=",
+            trait.column.name[i],
+            "))+geom_point(shape=1)",
+            "+geom_smooth(method=\"gam\")",
+            sep = ""
+          )
+        )) + 
+        ParseFacetTerms(nested.terms = tep.trait.individ.nested.term[i]) +
+        labs(y = paste(trait.chinese.label[i], "(", trait.abb[i], ")观测值/",trait.unit[i],sep=""),
+                  x = paste(trait.chinese.label[i], "(", trait.abb[i], ")育种值/",trait.unit[i],sep="")) + default_theme
+      fig.counter <-  fig.counter + 1
+      cat(
+        paste(
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代个体",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状观测值与育种值的散点图分布见图",fig.counter,"，二者之间的相关系数为",
+          eval(parse(text= paste("round(cor(ebv.individ$",trait.ebv.column.name[i],",ebv.individ$",trait.column.name[i],", use=\"complete.obs\"),2)",sep=""))),"±",
+          eval(parse(text= paste("round(CorTestPlus(cor.test(ebv.individ$",trait.ebv.column.name[i],",ebv.individ$",trait.column.name[i],"))$standard.error,4)",sep=""))),
+          "。\n\n",
+          sep = ""
+        )
+      )
+      print(ebv.scatter.point.individ)
+      cat("\n\n")
+      cat(
+        paste(
+          "###### 图",fig.counter," ",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代个体",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状表型值与育种值的散点图\n\n",
+          sep = ""
+        )
+      )
+    }
+  }
+} else {
+  cat("\n\n未执行相关分析。\n\n")
+}
+```
+
+```{r trait.ebv.family,warning = FALSE,results='asis',fig.width=6}
+cat("\n\n### 2.5.2 家系水平上的育种值预测分析\n\n")
+if(length(trait.abb)>=1) {
+  for (i in 1:length(trait.abb)) {
+    if (is.ebv.family[i]) {
+  		cat(paste("\n#### 2.5.2.",i, " ", trait.chinese.label[i], "(", trait.abb[i], ")"))
+      cat("\n\n")
+	    #读取包括家系EBV信息的文件
+      ebv.family <- read.csv(data.family.trait[i],header=TRUE)
+
+      table.counter <- table.counter + 1
+      ebv.trait.family.summ <-
+        SummarizeTableTrait(
+          trait.data = ebv.family,
+          terms = tep.table.trait.family.nested.term[i],
+          terms.names = tep.table.trait.family.nested.term.label[i],
+          trait.column.name =  trait.ebv.column.name[i],
+          trait.unit = trait.unit[i],
+          count.unit = family.unit,
+          digit.num =digit.num,
+          title = paste(
+            "表",
+            table.counter,
+            " ",
+            species.chinese.name,
+            species.latin.name,
+            "育种群体",
+            generation.name,
+            "世代家系",
+            paste(trait.chinese.label[i], "(", trait.abb[1], ")"),
+            "性状育种值描述统计参数",
+            sep = ""
+          )
+        )
+      #只描述总体情况
+      last.record <- tail(ebv.trait.family.summ$summ, 1)
+      cat("\n\n")
+      cat(
+        paste(
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代家系",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状育种值的描述性统计参数见表",
+          table.counter,
+          "。其中，",
+          "基于家系的测试组数量为",
+          round(last.record$T.count, digit.num),
+          " ",
+          family.unit,
+          "，",
+          "平均值为",
+          round(last.record$T.mean, digit.num),
+          " ",
+          trait.unit[i],
+          "，",
+          "最小值为",
+          round(last.record$T.min, digit.num),
+          " ",
+          trait.unit[i],
+          "，",
+          "最大值为",
+          round(last.record$T.max, digit.num),
+          " ",
+          trait.unit[i],
+          "，",
+          "标准差为",
+          round(last.record$T.sd, digit.num),
+          " ",
+          trait.unit[i],
+          "，",
+          "变异系数为",
+          round(last.record$T.cv, digit.num),
+          " %。",
+          "\n\n",
+          sep = ""
+        )
+      )
+      cat("\n\n")
+      print(ebv.trait.family.summ$table)
+      cat("\n\n")
+      fig.counter <- fig.counter + 1
+      cat(
+        paste(
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代家系",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状育种值的箱形图分布见图",
+          fig.counter,
+          "。\n\n",
+          sep = ""
+        )
+      )
+      xCombine <-
+        paste(
+          "interaction(",
+          paste(
+            "ebv.trait.family.summ$data",
+            unlist(strsplit(
+              tep.boxplot.trait.family.nested.term[i], ","
+            )),
+            sep = "$",
+            collapse = ","
+          ),
+          ")",
+          sep = ""
+        )
+      ebv.boxplot.family <-
+        eval(parse(
+          text = paste(
+            "ggplot(data=ebv.trait.family.summ$data,aes(x=",
+            xCombine,
+            ",y=",
+            trait.ebv.column.name[i],
+            ",colour=",
+            xCombine,
+            "))+geom_boxplot()",
+            sep = ""
+          )
+        )) + geom_jitter(shape = 21) + labs(
+          x = tep.boxplot.trait.family.nested.term.label[i],
+          y = paste(
+            trait.chinese.label[i],
+            "(",
+            trait.abb[i],
+            ")育种值/",
+            trait.unit[i],
+            sep = ""
+          )
+        ) +
+        family_phenotype_boxplot_theme
+      cat("\n\n")
+      print(ebv.boxplot.family)
+      cat("\n\n")
+      
+      cat(
+        paste(
+          "###### 图",
+          fig.counter,
+          " ",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代家系",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状育种值的箱形图\n\n",
+          sep = ""
+        )
+      )
+
+      ebv.family.group.by <- eval(parse(text=paste("group_by(ebv.family,",tep.trait.family.nested.term[i],",FamilyID)",sep="")))
+      ebv.family.group.by.summ <- eval(parse(text=paste("summarise(ebv.family.group.by,EBV = mean(",trait.ebv.column.name[i],"),PHE = mean(",trait.column.name[i],"))",sep="")))
+            
+      ebv.scatter.point.family <-
+        ggplot(data=ebv.family.group.by.summ,aes(x=EBV,y=PHE)) +
+        geom_point(shape = 1) + 
+        geom_smooth(method = "gam") +
+        ParseFacetTerms(nested.terms = tep.trait.family.nested.term[i]) +
+        labs(y = paste(trait.chinese.label[i], "(", trait.abb[i], ")观测值/",trait.unit[i],sep=""),
+                  x = paste(trait.chinese.label[i], "(", trait.abb[i], ")育种值/",trait.unit[i],sep="")) + 
+      default_theme 
+      #生成家系水平上的散点图
+      fig.counter <- fig.counter + 1
+      cat(
+        paste(
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代家系",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状观测值与育种值的散点图分布见图",fig.counter,"，二者之间的相关系数为",
+          eval(parse(text= paste("round(cor(ebv.family$",trait.ebv.column.name[i],",ebv.family$",trait.column.name[i],", use=\"complete.obs\"),2)",sep=""))),"±",
+          eval(parse(text= paste("round(CorTestPlus(cor.test(ebv.family$",trait.ebv.column.name[i],",ebv.family$",trait.column.name[i],"))$standard.error,4)",sep=""))),
+          "。\n\n",          
+          sep = ""
+        )
+      ) 
+      print(ebv.scatter.point.family)
+      cat("\n\n")
+      cat(
+        paste(
+          "###### 图",fig.counter," ",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代家系",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状表型值与育种值的散点图\n\n",          
+          sep = ""
+        )
+      )
+      fig.counter <- fig.counter + 1
+      cat(
+        paste(
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代各家系",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "育种值见图",fig.counter,"。\n\n",
+          sep = ""
+        )
+      )
+      ebv.bar.point.family <-
+        ggplot(ebv.family.group.by.summ,aes(x=reorder(FamilyID,EBV),y=EBV)) +
+        geom_segment(aes(xend = FamilyID), yend = 0, colour = "grey50") +
+        geom_point(aes(colour = FamilyID)) +
+        ParseFacetTerms(nested.terms = tep.trait.family.nested.term[i]) +
+        labs(x = "家系编号", y = paste(trait.chinese.label[i], "(", trait.abb[i], ")育种值/",trait.unit[i],sep="")) +
+        theme.family.ebv.bar.point.axis.text.x.angel.90
+      print(ebv.bar.point.family)
+      cat("\n\n")
+      cat(
+        paste(
+          "###### 图",fig.counter," ",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代各家系",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "育种值\n\n",
+          sep = ""
+        )
+      )      
+    }
+    
+  }
+} else {
+  cat("\n\n未执行相关分析。\n\n")
+}
+```
+

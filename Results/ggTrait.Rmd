@@ -1,0 +1,79 @@
+```{r Trait.realized.genetic.gain,results='asis'}
+cat("\n\n### 2.6.1 实现遗传进展")
+if(length(trait.abb)>=1) {
+  for (i in 1:length(trait.abb)) {
+    if (is.realized.genetic.gain[i]) {
+      cat("\n\n####",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")性状", "\n", sep = ""))
+      table.counter <- table.counter + 1
+      cat("\n\n")
+      cat(
+        paste("###### 表",table.counter," ",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状的实现选择反应\n\n",
+          sep = ""
+        )
+      )
+      cat("\n\n")
+      cat(trait.realized.genetic.gain.table[i])
+      
+    } else {
+      cat("\n\n####",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")性状", "\n", sep = ""))
+      cat("\n\n")      
+      cat("未执行该项分析。\n\n")
+    }
+  }
+} else {
+  cat("\n\n未执行该项分析。\n\n")
+}
+```
+
+```{r Trait.predicted.genetic.gain,results='asis'}
+cat("\n### 2.6.2 预测遗传进展")
+if(length(trait.abb)>=1) {
+  for (i in 1:length(trait.abb)) {
+    if (is.predicted.genetic.gain[i]) {
+      cat("\n\n####",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")性状", "\n", sep = ""))
+      table.counter <- table.counter + 1
+      cat("\n\n")
+      cat(
+          paste("###### 表",table.counter," ",
+          species.chinese.name,
+          species.latin.name,
+          "育种群体",
+          generation.name,
+          "世代",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")"),
+          "性状的预测选择反应\n\n",
+          sep = ""
+        )
+      )
+      cat("\n\n")
+      cat(trait.predicted.genetic.gain.table[i])
+      cat("\n\n")
+      
+    } else {
+      cat("\n\n####",
+          paste(trait.chinese.label[i], "(", trait.abb[i], ")性状", "\n", sep = ""))
+      cat("\n\n")
+      cat("未执行该项分析。\n\n")
+    }
+  }
+} else {
+  cat("\n\n未执行该项分析。\n\n")  
+}
+```
+
+
+
+
+
+
+

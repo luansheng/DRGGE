@@ -1,0 +1,326 @@
+```{r population.pedigree.analysis,cache = FALSE, results='asis'}
+if (is.pedigree.analysis) {
+  pedigree.pre <- prePed(pedigree)
+  #prePed后，个体的ID列名称被统一为Indiv
+  keep <- pedigree.pre$Indiv[pedigree.pre$Born %in% keep.kin.year]
+  #系谱汇总,主要是系谱完整度参数
+  keep.completeness <-
+    summary(pedigree.pre, keep.only = keep, d = pedigree.depth)
+  cat("\n\n")
+  cat(
+    paste(
+      "\n\n",
+      "等价完整世代数（the number of equivalent complete generations，equiGen）是评价系谱完整度的一个重要参数。它指的是个体已知的祖先个体，在可追溯的每个世代所占的比例之和。",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代家系个体的",
+      "equiGen描述性统计参数如下所述。其中，",
+      DescStatChinese(
+        keep.completeness$equiGen,
+        scale.unit = "个",
+        digit.num = 2
+      ),
+      "。",
+      "\n\n",
+      sep = ""
+    )
+  )
+  cat(
+    paste(
+      "\n\n系谱完整度指数（Index of pedigree completeness，PCI）是评价近交系数，估计育种值的一个重要参考指标。因为当个体的双亲有一个缺失时，其PCI指数就会为0，对于系谱缺失非常敏感。",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代家系个体的",
+      "PCI描述统计参数如下所述。其中，",
+      DescStatChinese(keep.completeness$PCI, digit.num = 2),
+      "。",
+      "PCI越接近1，系谱越完整。",
+      "\n\n",
+      sep = ""
+    )
+  )
+  cat(
+    paste(
+      "\n\n",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代家系",
+      "双亲均可追溯世代数（包括双亲）（Number of fully traced generations,fullGen）的描述统计参数如下所述。其中，",
+      DescStatChinese(
+        keep.completeness$fullGen,
+        scale.unit = "个",
+        digit.num = 2
+      ),
+      "。\n\n",
+      sep = ""
+    )
+  )
+  cat(
+    paste(
+      "\n\n",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代家系",
+      "最大可追溯世代数（Number of maximum generations traced,maxGen）的描述统计参数如下所述。其中，",
+      DescStatChinese(
+        keep.completeness$maxGen,
+        scale.unit = "个",
+        digit.num = 2
+      ),
+      "。\n\n",
+      sep = ""
+    )
+  )
+  #计算当前世代个体和家系的近交系数
+  keep.inbreeding.coefficient <-
+    pedInbreeding(pedigree.pre)[keep, c("Indiv", "Inbr")]
+  keep.inbreeding.coefficient$Indiv <-
+    as.character(keep.inbreeding.coefficient$Indiv)
+  keep.inbreeding.coefficient.family <-
+    left_join(keep.inbreeding.coefficient,
+              pedigree.pre[, c("Indiv", "FamilyID")],
+              by = c("Indiv" = "Indiv"))
+  family.inbreeding.coefficient <-
+    distinct(keep.inbreeding.coefficient.family, FamilyID, Inbr)
+  family.inbreeding.coefficient.generation <-
+    cbind(family.inbreeding.coefficient,
+          Generation = rep(generation.name, nrow(family.inbreeding.coefficient)))
+  
+  #画出家系的近交系数,通过箱形图和点图
+  if (max(family.inbreeding.coefficient.generation$Inbr) > 0) {
+    family.inbreeding.coefficient.boxplot <-
+      ggplot(data = family.inbreeding.coefficient.generation, aes(x = Generation, y = Inbr)) +
+      geom_boxplot() +
+      geom_dotplot(
+        binaxis = "y",
+        stackdir = "center",
+        binwidth = (
+          max(family.inbreeding.coefficient.generation$Inbr) - min(family.inbreeding.coefficient.generation$Inbr)
+        ) / 50,
+        position = "dodge"
+      ) +
+      labs(x = "世代", y = "近交系数") +
+      default_theme
+    fig.counter <- fig.counter + 1
+    #描述家系的近交系数
+    cat(
+      paste(
+        "\n\n",
+        species.chinese.name,
+        species.latin.name,
+        "育种群体",
+        generation.name,
+        "世代",
+        "家系的近交系数见图",
+        fig.counter,
+        "。其中，",
+        DescStatChinese(family.inbreeding.coefficient$Inbr, digit.num = 4),
+        "。\n\n",
+        sep = ""
+      )
+    )
+    cat("\n\n")
+    suppressWarnings(print(family.inbreeding.coefficient.boxplot))
+    cat("\n\n")
+    cat(
+      paste(
+        "###### 图",
+        fig.counter,
+        " ",
+        species.chinese.name,
+        species.latin.name,
+        "育种群体",
+        generation.name,
+        "世代",
+        "家系的近交系数箱形图",
+        "\n\n",
+        sep = ""
+      )
+    )
+  } else {
+    cat(
+      paste(
+        "\n\n",
+        species.chinese.name,
+        species.latin.name,
+        "育种群体",
+        generation.name,
+        "世代",
+        "家系的近交系数为0。\n\n",
+        sep = ""
+      )
+    )
+  }
+  #计算和画出各家系的共亲系数
+  pedigree.pre.prune <- prePed(pedigree.pre,keep=keep)
+  unique.indiv <-  distinct(pedigree.pre.prune[keep,],Sire,Dam,Sex, .keep_all = TRUE)$Indiv
+  keep.kin <- pedIBD(pedigree.pre, keep.only = unique.indiv)
+  #因为上下三角都是一样的，只保留下三角数据
+  #keep.kin[upper.tri(keep.kin)] <- NA
+  #转化为三列数据,cc是coancestry coefficient的意思
+  keep.kin.data.table <-
+    as.data.table(keep.kin, keep.rownames = TRUE)
+  keep.kin.three.column <-
+    melt(
+      keep.kin.data.table,
+      id.vars = c("rn"),
+      measure.vars =    colnames(keep.kin.data.table)[-1]
+    )
+  colnames(keep.kin.three.column) <- c("ID1", "ID2", "cc")
+  keep.kin.three.column$ID2 <-
+    as.character(keep.kin.three.column$ID2)
+  keep.kin.three.column.family.ID1 <-
+    left_join(keep.kin.three.column, pedigree.pre[, c("Indiv", "FamilyID")], by =
+                c("ID1" = "Indiv"))
+  keep.kin.three.column.family.ID1.ID2 <-
+    left_join(keep.kin.three.column.family.ID1,
+              pedigree.pre[, c("Indiv", "FamilyID")],
+              by = c("ID2" = "Indiv"))
+  keep.kin.three.column.family <-
+    keep.kin.three.column.family.ID1.ID2[, c("cc", "FamilyID.x", "FamilyID.y")]
+  keep.kin.three.column.family <-
+    distinct(keep.kin.three.column.family,
+             FamilyID.x,
+             FamilyID.y,
+             cc,
+             .keep_all = TRUE)
+  keep.kin.three.column.family <-
+    keep.kin.three.column.family[!(
+      keep.kin.three.column.family$FamilyID.x == keep.kin.three.column.family$FamilyID.y
+    ), ]
+  keep.kin.three.column.family.heatmap <-
+    ggplot(keep.kin.three.column.family,
+           aes(x = FamilyID.x, y = FamilyID.y)) +
+    geom_tile(aes(fill = cc), colour = "white") +
+    scale_fill_gradient(low = "white", high = "steelblue") +
+    labs(x = "家系编号", y = "家系编号", fill = "共亲系数") +
+    coancestry_heatmap_theme
+  fig.counter <-  fig.counter + 1
+  cat(
+    paste(
+      "\n\n",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代",
+      "家系间的共亲系数见图",
+      fig.counter,
+      "。",
+      "家系间共亲系数的",
+      DescStatChinese(keep.kin.three.column.family$cc, digit.num = 4),
+      "。\n\n",
+      sep = ""
+    )
+  )
+  print(keep.kin.three.column.family.heatmap)
+  cat("\n\n")
+  cat(
+    paste(
+      "###### 图",
+      fig.counter,
+      " ",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代",
+      "家系间的共亲系数热图",
+      "\n\n",
+      sep = ""
+    )
+  )
+  #遗传多样性，通过共亲系数来体现
+  keep.genetic.diversity <- 1 - mean(keep.kin[unique.indiv, unique.indiv])
+  #有效群体大小
+  keep.completeness <-
+    summary(pedigree.pre, keep.only = unique.indiv, d = pedigree.depth)
+  g <- keep.completeness[unique.indiv, "equiGen"]
+  N <- length(g)
+  n <-
+    (matrix(g, N, N, byrow = TRUE) + matrix(g, N, N, byrow = FALSE)) /
+    2
+  delta.c <- 1 - (1 - keep.kin[unique.indiv, unique.indiv]) ^ (1 / n)
+  effective.size <- 1 / (2 * mean(delta.c))
+  cat(
+    paste(
+      "\n\n",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代",
+      "的遗传多样性为",
+      round(keep.genetic.diversity, digit.num),
+      ",",
+      "有效群体大小为\n",
+      round(effective.size, digit.num),
+      "。",
+      sep = ""
+    )
+  )
+  cat("\n\n")
+  
+  
+  #计算奠基者群体的构成
+  cont <- pedBreedComp(pedigree.pre, thisBreed = native.breed)
+  cont.by.year <-
+    conttac(cont, cohort = pedigree.pre$Born, mincont = 0.01)
+  levels(cont.by.year$Breed)[levels(cont.by.year$Breed) %in% c("native")] <-
+    native.breed
+  levels(cont.by.year$Breed)[levels(cont.by.year$Breed) %in% c("other")] <-
+    "其他"
+  levels(cont.by.year$Breed)[levels(cont.by.year$Breed) %in% c("unknown")] <-
+    "未知"
+  ggplot.breed.composition.by.year <-
+    ggplot(cont.by.year, aes(x = Year, y = Contribution*100, fill = Breed)) +
+    geom_area(color = "black") +
+    founder_pop_area_theme+
+    labs(x = "年份", y = "百分比/%", fill = "奠基者群体")
+  cat("\n\n")
+  fig.counter <-  fig.counter + 1
+  cat(
+    paste(
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代",
+      "奠基者群体贡献的比例见图",
+      fig.counter,
+      "。各奠基者群体贡献比例的",
+      DescStatChinese((cont.by.year$Contribution[cont.by.year$Year == keep.kin.year])*100, scale.unit = "%" ,digit.num = 2),
+      "。\n\n",
+      sep = ""
+    )
+  )
+  cat("\n\n")
+  print(ggplot.breed.composition.by.year)
+  cat("\n\n")
+  cat(
+    paste(
+      "###### 图",
+      fig.counter,
+      " ",
+      species.chinese.name,
+      species.latin.name,
+      "育种群体",
+      generation.name,
+      "世代",
+      "奠基者群体贡献比例的堆积面积图\n\n",
+      sep = ""
+    )
+  )
+} else {
+  cat("\n\n未执行相关分析。\n\n")
+}
+```
+

@@ -1,0 +1,76 @@
+---
+output:
+  word_document:
+    fig_caption: yes
+    keep_md: yes
+    toc: yes
+    reference_docx: Style/mystyles.docx
+df_print: kable
+--- 
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = getwd())
+knitr::opts_chunk$set(echo = FALSE,cache = FALSE,warning=FALSE, dpi = 300, fig.showtext=TRUE, knitr.table.format='pandoc')
+source("R/setup.r",encoding = "utf-8")
+source("R/functions.r",encoding = "utf-8")
+#修改参数文件名称和内容，适配不同的物种育种项目数据集
+source("Parameter/parameters江苏数丰罗氏沼虾2018G02.r",encoding = "utf-8")
+source("R/checkparameters.r",encoding = "utf-8")
+#修改一、育种材料与方法Rmd文档，以及三、讨论Rmd文档
+#适配不同的物种育种项目数据集
+```
+
+---
+title: `r paste(species.chinese.name, species.latin.name,"育种核心群体", generation.name, "世代遗传评估报告（No.", report.No, "）", sep="")`
+author: `r paste("受托单位：", company.name, " 评估人：", authors, sep="")`
+date: `r Sys.Date()`
+---
+
+#####
+# 一、育种材料和方法  
+```{r material.method,child="MaterialMethod/mmTrait数丰罗氏沼虾2018G02.Rmd"}
+
+```
+
+#####
+# 二、结果  
+## 2.1 育种群体家系的构建分析  
+```{r FamilyDataStructure,results="asis",child="Results/summFamily.Rmd"}
+
+```
+
+## 2.2 育种群体的系谱分析  
+```{r pedigree.analysis,results="asis",child="Results/paPopulation.Rmd"}
+
+```
+
+## 2.3 育种群体目标性状的描述性统计分析  
+```{r trait.stat.description,results="asis",child="Results/summTrait.Rmd"}
+
+```
+
+## 2.4 育种群体目标性状的遗传参数估计  
+```{r trait.genetic.parameters,results="asis",child="Results/gpTrait.Rmd"}
+```
+
+## 2.5 育种群体目标性状的育种值预测  
+```{r trait.ebv.prediction,results="asis",child="Results/ebvTrait.Rmd"}
+```
+
+## 2.6 育种群体目标性状的遗传进展分析  
+```{r trait.genetic.gain,results="asis",child="Results/ggTrait.Rmd"}
+```
+
+
+## 2.7 育种群体目标性状选择指数和家系性能  
+```{r candidate.selection.mating,results="asis",child="Results/selmateTrait.Rmd"}
+```
+
+#####
+# 三、讨论  
+```{r discussion,results="asis",child="Discussion/discussion数丰罗氏沼虾2018G02.Rmd"}
+```
+
+
+
+ 
