@@ -14,12 +14,12 @@
     * 育种群体目标性状选择指数和家系性能
 * 讨论
 
-![图1 Mainutf8.docx外观](Image/Mainutf8.png)
+![图1 Mainutf8.docx外观](https://github.com/luansheng/DRGGE/blob/master/Image/Mainutf8.png)
 
 DRGGE主要是利用R语言，在Rstudio客户端完成。在编写过程中，使用Markdown文档标记进行书写，表通过knitr包中的kable输出，图通过ggplot2包输出。数据分析用用到了dplyr包和data.table包，系谱分析用到了optiSel包。Rstudio在后台调用rmarkdown、knitr、pandoc等R包，把书写的Rmd格式转换为docx格式。
 
 # 安装
-用到的软件主要包括       
+如果在本地安装，用到的软件主要包括：       
 1. R [R网站](https://www.r-project.org/), 务必要下载使用64位版本      
 2. Rstudio 最新版 [Rstudio windows客户端](http://www.rstudio.com/products/rstudio/download/)       
 3. 打开Rstudio，菜单栏Tools -> Install Packages...  安装需要的R包，主要包括：
@@ -35,7 +35,7 @@ DRGGE主要是利用R语言，在Rstudio客户端完成。在编写过程中，�
 
 安装完成后，在Rstudio中打开参数文件parameters.R和Mainutf8.Rmd两个文件，在前者中编辑各种参数，然后运行后者，输出报告。
 
-#使用
+# 使用
 1. 为了确保程序正常运行和输出，DRGGE系统使用到的所有数据文件和程序文件，**务必请设定为utf-8格式**。
 
 * Rstudio设置为utf-8的方法：
