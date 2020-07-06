@@ -53,9 +53,9 @@ date: `r Sys.Date()`
 ```{r trait.genetic.parameters,results="asis",child="Results/gpTrait.Rmd"}
 ```
 
-<!-- ## 2.5 育种群体目标性状的育种值预测 -->
-<!-- ```{r trait.ebv.prediction,results="asis",child="Results/ebvTrait.Rmd"} -->
-<!-- ``` -->
+## 2.5 育种群体目标性状的育种值预测
+```{r trait.ebv.prediction,results="asis",child="Results/ebvTrait.Rmd"}
+```
 
 ## 2.6 育种群体目标性状的遗传进展分析  
 ```{r trait.genetic.gain,results="asis",child="Results/ggTrait.Rmd"}
