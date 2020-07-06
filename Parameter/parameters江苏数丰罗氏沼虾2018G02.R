@@ -566,70 +566,70 @@ tsi.trait.selection.index.nested.term.label = c("世代") #其中的逗号为英
 #-----------------------------图形参数调整（不熟悉请不要调整）---------------
 
 #通用
-default_theme <- theme_gray(base_size = 30,base_family = "heiti")+theme(
-  axis.title.x=element_text(size=28),
-  axis.title.y=element_text(size=28),
-  axis.text.x=element_text(size=26),
-  axis.text.y=element_text(size=26),
+default_theme <- theme_gray(base_size = 16,base_family = "wqy-microhei")+theme(
+  axis.title.x=element_text(size=16),
+  axis.title.y=element_text(size=16),
+  axis.text.x=element_text(size=14),
+  axis.text.y=element_text(size=14),
   axis.ticks = element_line(size = 0.1),
   legend.position = "none",
   panel.border = element_blank()
 )
 
 # 家系间亲缘系数热图
-coancestry_heatmap_theme <- theme_gray(base_size = 30,base_family = "heiti")+theme(
-  axis.title.x=element_text(size=28),
-  axis.title.y=element_text(size=28),
+coancestry_heatmap_theme <- theme_gray(base_size = 16,base_family = "wqy-microhei")+theme(
+  axis.title.x=element_text(size=16),
+  axis.title.y=element_text(size=16),
   axis.text.x=element_text(angle = 90, hjust = 1, size=6),
   axis.text.y=element_text(size=6),
   axis.ticks = element_line(size = 0.1)
 )
 
 # 奠基者群体组成面积图
-founder_pop_area_theme <- theme_gray(base_size = 30,base_family = "heiti")+theme(
-  axis.title.x=element_text(size=28),
-  axis.title.y=element_text(size=28),
-  axis.text.x=element_text(size=26),
-  axis.text.y=element_text(size=26),
+founder_pop_area_theme <- theme_gray(base_size = 16,base_family = "wqy-microhei")+theme(
+  axis.title.x=element_text(size=16),
+  axis.title.y=element_text(size=16),
+  axis.text.x=element_text(size=14),
+  axis.text.y=element_text(size=14),
   axis.ticks = element_line(size = 0.1)
 )
 #家系生产同步性分布柱状图
-family_birthday_bar_theme <- theme_gray(base_size = 30,base_family = "heiti")+theme(
-  axis.title.x=element_text(size=28),
-  axis.title.y=element_text(size=28),
-  axis.text.x=element_text(size=26,angle = 45, hjust = 1),
-  axis.text.y=element_text(size=26),
+family_birthday_bar_theme <- theme_gray(base_size = 16,base_family = "wqy-microhei")+theme(
+  axis.title.x=element_text(size=16),
+  axis.title.y=element_text(size=16),
+  axis.text.x=element_text(size=14,angle = 45, hjust = 1),
+  axis.text.y=element_text(size=14),
   axis.ticks = element_line(size = 0.1),
   legend.position = "none",
   panel.border = element_blank()
 )
 
 #个体水平上性状的统计性描述箱形图
-theme.3 <- theme_gray(base_size = 30,base_family = "heiti")+theme(
-  axis.title.x=element_text(size=28),
-  axis.title.y=element_text(size=28),
-  axis.text.x=element_text(size=26,angle = 0),
-  axis.text.y=element_text(size=26),
+theme.3 <- theme_gray(base_size = 16,base_family = "wqy-microhei")+theme(
+  axis.title.x=element_text(size=16),
+  axis.title.y=element_text(size=16),
+  axis.text.x=element_text(size=14,angle = 0),
+  axis.text.y=element_text(size=14),
   axis.ticks = element_line(size = 0.1),
   legend.position = "none",
   panel.border = element_blank()
 )
 
 #家系水平上性状的统计性描述箱形图
-family_phenotype_boxplot_theme <- theme_gray(base_size = 30,base_family = "heiti")+theme(
-  axis.title.x=element_text(size=28),
-  axis.title.y=element_text(size=28),
-  axis.text.x=element_text(size=26,angle = 0),
-  axis.text.y=element_text(size=26),
+family_phenotype_boxplot_theme <- theme_gray(base_size = 16,base_family = "wqy-microhei")+theme(
+  axis.title.x=element_text(size=16),
+  axis.title.y=element_text(size=16),
+  axis.text.x=element_text(size=14,angle = 0),
+  axis.text.y=element_text(size=14),
   axis.ticks = element_line(size = 0.1),
   legend.position = "none",
   panel.border = element_blank()
 )
 
 #家系水平上育种值和选择指数点柱状图
-theme.family.ebv.bar.point.axis.text.x.angel.90 <- theme_gray(base_size = 30,base_family = "heiti")+theme(
-  axis.title.x=element_text(size=28),
-  axis.title.y=element_text(size=28),
+theme.family.ebv.bar.point.axis.text.x.angel.90 <- theme_gray(base_size = 16,base_family = "wqy-microhei")+theme(
+  axis.title.x=element_text(size=16),
+  axis.title.y=element_text(size=16),
   axis.text.x=element_text(size=12,angle = 90, hjust=1),
   axis.text.y=element_text(size=12),
   axis.ticks = element_line(size = 0.1),
@@ -641,7 +641,7 @@ theme.family.ebv.bar.point.axis.text.x.angel.90 <- theme_gray(base_size = 30,bas
 
 ######以下参数请不要修改#####
 #家系信息文件路径初始化
-data_directory = "./Data/"
+data_directory = "Data/"
 FamilyInfo = paste(data_directory, family.file.name, sep = "") #家系文件信息
 #系谱文件路径初始化
 pedigree.file.name.path = paste(data_directory, pedigree.file.name, sep = "")

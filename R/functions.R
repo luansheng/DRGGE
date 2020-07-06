@@ -171,6 +171,34 @@ DescStatChinese <- function(vector.desc.stat,scale.unit="",digit.num=2){
 }  
 
 # 生成类似facet_wrap( ~ Generation + SexID) 形式
-ParseFacetTerms <- function(nested.terms = "",scales.value="fixed"){
-return(eval(parse(text=paste("facet_wrap(~",paste(unlist(strsplit(nested.terms,split = ",")),collapse = "+"),",scales=\"",scales.value,"\"",")",sep=""))))
+ParseFacetTerms <- function(nested.terms = "",
+                            scales.value = "fixed") {
+  return(eval(parse(
+    text = paste(
+      "facet_wrap(vars(",
+      paste(trimws(unlist(
+        strsplit(nested.terms, split = ",")
+      )), collapse = "+"),
+      "),scales=\"",
+      scales.value,
+      "\"",
+      ")",
+      sep = ""
+    )
+  )))
+}
+
+OutputFacetTerms <- function(nested.terms = "",
+                       scales.value = "fixed") {
+  return(paste(
+    "facet_wrap(vars(",
+    paste(trimws(unlist(
+      strsplit(nested.terms, split = ",")
+    )), collapse = ","),
+    "),scales=\"",
+    scales.value,
+    "\"",
+    ")",
+    sep = ""
+  ))
 }

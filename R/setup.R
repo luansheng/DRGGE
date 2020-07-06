@@ -1,16 +1,27 @@
-rm(list=ls())
+rm(list = ls())
 #选择一个包下载镜像站点，35可能是清华大学cran镜像站点
 #chooseCRANmirror(graphics=FALSE, local.only=TRUE, ind=35)
-required_packages <- c("knitr","ggplot2","scales","data.table","dplyr","pander","optiSel","sysfonts","showtext")
+required_packages <-
+  c(
+    "knitr",
+    "ggplot2",
+    "scales",
+    "data.table",
+    "dplyr",
+    "pander",
+    "optiSel",
+    "sysfonts",
+    "showtext",
+    "xfun"
+  )
 
 for (i in 1:length(required_packages)) {
-  is_installed <- require(required_packages[i],character.only = TRUE)
+  is_installed <- require(required_packages[i], character.only = TRUE)
   if (!is_installed) {
-    install.packages(pkgs=required_packages[i])
-    require(required_packages[i],character.only = TRUE)
+    install.packages(pkgs = required_packages[i])
+    require(required_packages[i], character.only = TRUE)
   }
 }
-
 
 #pdf.options(family = "GB1") #定义中文编码，图形中显示中文
 options(warn = -1)
@@ -20,8 +31,17 @@ options(warn = -1)
 #              SIM=windowsFont("SimHei"))
 
 # 使用windows中自带的字体
+if (is_windows()) {
 font_add(family = "heiti",regular = "simhei.ttf")
 font_add(family = "kaiti",regular = "simkai.ttf")
+}
 
+# Linux使用文泉驿微米黑字体
+# 如何安装参见 https://luansheng.netlify.app/2019/07/13/drawing-a-figure-with-cjk-character/
+if (is_linux()) {
+  if (!c("wqy-microhei") %in% font_families()) {
+    stop("请安装wqy-microhei字体")
+  }
+}
 #使用showtext包
 showtext_auto()
